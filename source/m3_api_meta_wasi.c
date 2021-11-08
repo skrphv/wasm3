@@ -32,11 +32,11 @@
 # error "Missing WASI headers"
 #endif
 
-static m3_wasi_context_t* wasi_context;
+M3_GLOBAL_VAR_STATIC m3_wasi_context_t* wasi_context;
 
 typedef size_t __wasi_size_t;
 
-static inline
+M3_FUNC_STATIC inline
 void copy_iov_to_host(void* _mem, __wasi_iovec_t* host_iov, __wasi_iovec_t* wasi_iov, int32_t iovs_len)
 {
     // Convert wasi memory offsets to host addresses
@@ -885,7 +885,7 @@ m3ApiRawFunction(m3_wasi_generic_sched_yield)
 }
 
 
-static
+M3_FUNC_STATIC
 M3Result SuppressLookupFailure(M3Result i_result)
 {
     if (i_result == m3Err_functionLookupFailed)
@@ -911,7 +911,7 @@ M3Result  m3_LinkWASI  (IM3Module module)
         wasi_context->argv = 0;
     }
 
-    static const char* namespaces[2] = { "wasi_unstable", "wasi_snapshot_preview1" };
+    M3_LOCAL_VAR_STATIC_CONST_PTR(char) namespaces[2] = { "wasi_unstable", "wasi_snapshot_preview1" };
 
     // Some functions are incompatible between WASI versions
 _   (SuppressLookupFailure (m3_LinkRawFunction (module, "wasi_unstable",          "fd_seek",           "i(iIi*)",   &m3_wasi_unstable_fd_seek)));

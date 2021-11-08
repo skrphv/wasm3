@@ -13,7 +13,7 @@
 #if defined(d_m3HasTracer)
 
 
-static FILE* trace = NULL;
+M3_GLOBAL_VAR_STATIC FILE* trace = NULL;
 
 m3ApiRawFunction(m3_env_log_execution)
 {
@@ -95,7 +95,7 @@ m3ApiRawFunction(m3_env_##FUNC)                               \
     m3ApiGetArg      (uint32_t, id)                           \
     m3ApiGetArg      (uint32_t, local)                        \
     m3ApiGetArg      (TYPE,     val)                          \
-    fprintf(trace, NAME ";%d;%d;" FMT "\n", id, local, val); \
+    fprintf(trace, NAME ";%d;%d;" FMT "\n", id, local, val);  \
     m3ApiReturn(val);                                         \
 }
 
@@ -110,7 +110,7 @@ d_m3TraceLocal(get_f64, "get f64", double,  "%" PRIf64)
 d_m3TraceLocal(set_f64, "set f64", double,  "%" PRIf64)
 
 
-static
+M3_FUNC_STATIC
 M3Result SuppressLookupFailure(M3Result i_result)
 {
     if (i_result == m3Err_none) {

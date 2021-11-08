@@ -238,18 +238,18 @@
 #   define m3_bswap64(x)     __bswap_64((x))
 #  else
 #   warning "Using naive (probably slow) bswap operations"
-    static inline
+    M3_FUNC_STATIC inline
     uint16_t m3_bswap16(uint16_t x) {
       return ((( x  >> 8 ) & 0xffu ) | (( x  & 0xffu ) << 8 ));
     }
-    static inline
+    M3_FUNC_STATIC inline
     uint32_t m3_bswap32(uint32_t x) {
       return ((( x & 0xff000000u ) >> 24 ) |
               (( x & 0x00ff0000u ) >> 8  ) |
               (( x & 0x0000ff00u ) << 8  ) |
               (( x & 0x000000ffu ) << 24 ));
     }
-    static inline
+    M3_FUNC_STATIC inline
     uint64_t m3_bswap64(uint64_t x) {
       return ((( x & 0xff00000000000000ull ) >> 56 ) |
               (( x & 0x00ff000000000000ull ) >> 40 ) |

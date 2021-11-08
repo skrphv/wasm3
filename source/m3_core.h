@@ -178,8 +178,23 @@ M3CodePageHeader;
 #define d_externalKind_memory               2
 #define d_externalKind_global               3
 
-static const char * const c_waTypes []          = { "nil", "i32", "i64", "f32", "f64", "unknown" };
-static const char * const c_waCompactTypes []   = { "_", "i", "I", "f", "F", "?" };
+
+#define M3_GLOBAL_VAR                        //just for mark global variables
+#define M3_GLOBAL_VAR_CONST                  const
+#define M3_GLOBAL_VAR_STATIC                 static
+#define M3_GLOBAL_VAR_STATIC_CONST           static const
+#define M3_GLOBAL_VAR_CONST_PTR(Type)        const Type * const
+#define M3_GLOBAL_VAR_STATIC_CONST_PTR(Type) static const Type * const
+
+#define M3_LOCAL_VAR_STATIC                  static
+#define M3_LOCAL_VAR_STATIC_CONST            static const
+#define M3_LOCAL_VAR_STATIC_CONST_PTR(Type)  static const Type * const
+
+#define M3_FUNC_STATIC                       static
+
+
+M3_GLOBAL_VAR_STATIC_CONST_PTR(char) c_waTypes []        = { "nil", "i32", "i64", "f32", "f64", "unknown" };
+M3_GLOBAL_VAR_STATIC_CONST_PTR(char) c_waCompactTypes [] = { "_", "i", "I", "f", "F", "?" };
 
 
 # if d_m3VerboseErrorMessages
@@ -226,30 +241,35 @@ void *      m3_CopyMem              (const void * i_from, size_t i_size);
 
 // Tracing format: timestamp;heap:OpCode;name;size(bytes);new items;new ptr;old items;old ptr
 
-static inline void * m3_AllocStruct_Impl(ccstr_t name, size_t i_size) {
+M3_FUNC_STATIC inline
+void * m3_AllocStruct_Impl(ccstr_t name, size_t i_size) {
     void * result = m3_Malloc_Impl(i_size);
     fprintf(stderr, PRIts ";heap:AllocStruct;%s;%zu;;%p;;\n", m3_GetTimestamp(), name, i_size, result);
     return result;
 }
 
-static inline void * m3_AllocArray_Impl(ccstr_t name, size_t i_num, size_t i_size) {
+M3_FUNC_STATIC inline
+void * m3_AllocArray_Impl(ccstr_t name, size_t i_num, size_t i_size) {
     void * result = m3_Malloc_Impl(i_size * i_num);
     fprintf(stderr, PRIts ";heap:AllocArr;%s;%zu;%zu;%p;;\n", m3_GetTimestamp(), name, i_size, i_num, result);
     return result;
 }
 
-static inline void * m3_ReallocArray_Impl(ccstr_t name, void * i_ptr_old, size_t i_num_new, size_t i_num_old, size_t i_size) {
+M3_FUNC_STATIC inline
+void * m3_ReallocArray_Impl(ccstr_t name, void * i_ptr_old, size_t i_num_new, size_t i_num_old, size_t i_size) {
     void * result = m3_Realloc_Impl (i_ptr_old, i_size * i_num_new, i_size * i_num_old);
     fprintf(stderr, PRIts ";heap:ReallocArr;%s;%zu;%zu;%p;%zu;%p\n", m3_GetTimestamp(), name, i_size, i_num_new, result, i_num_old, i_ptr_old);
     return result;
 }
 
-static inline void * m3_Malloc (ccstr_t name, size_t i_size) {
+M3_FUNC_STATIC inline
+void * m3_Malloc (ccstr_t name, size_t i_size) {
     void * result = m3_Malloc_Impl (i_size);
     fprintf(stderr, PRIts ";heap:AllocMem;%s;%zu;;%p;;\n", m3_GetTimestamp(), name, i_size, result);
     return result;
 }
-static inline void * m3_Realloc (ccstr_t name, void * i_ptr, size_t i_newSize, size_t i_oldSize) {
+M3_FUNC_STATIC inline
+void * m3_Realloc (ccstr_t name, void * i_ptr, size_t i_newSize, size_t i_oldSize) {
     void * result = m3_Realloc_Impl (i_ptr, i_newSize, i_oldSize);
     fprintf(stderr, PRIts ";heap:ReallocMem;%s;;%zu;%p;%zu;%p\n", m3_GetTimestamp(), name, i_newSize, result, i_oldSize, i_ptr);
     return result;

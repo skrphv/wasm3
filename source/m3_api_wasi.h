@@ -33,6 +33,20 @@ M3Result    m3_LinkWASIWithOptions  (IM3Module io_module, uvwasi_options_t uvwas
 
 m3_wasi_context_t* m3_GetWasiContext();
 
+
+#if defined(d_m3HasWASI)
+
+#define PREOPEN_CNT   5
+
+typedef struct Preopen {
+    int         fd;
+    const char* path;
+    const char* real_path;
+} Preopen;
+
+#endif
+
+
 d_m3EndExternC
 
 #endif // m3_api_wasi_h

@@ -98,7 +98,7 @@ _   (AllocFuncType (& funcType, (u32) maxNumTypes));
 }
 
 
-static
+M3_FUNC_STATIC
 M3Result  ValidateSignature  (IM3Function i_function, ccstr_t i_linkingSignature)
 {
     M3Result result = m3Err_none;

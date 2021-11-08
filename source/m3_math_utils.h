@@ -18,14 +18,14 @@
 
 #define __builtin_popcount    __popcnt
 
-static inline
+M3_FUNC_STATIC inline
 int __builtin_ctz(uint32_t x) {
     unsigned long ret;
     _BitScanForward(&ret, x);
     return (int)ret;
 }
 
-static inline
+M3_FUNC_STATIC inline
 int __builtin_clz(uint32_t x) {
     unsigned long ret;
     _BitScanReverse(&ret, x);
@@ -38,14 +38,14 @@ int __builtin_clz(uint32_t x) {
 
 #define __builtin_popcountll  __popcnt64
 
-static inline
+M3_FUNC_STATIC inline
 int __builtin_ctzll(uint64_t value) {
     unsigned long ret;
      _BitScanForward64(&ret, value);
     return (int)ret;
 }
 
-static inline
+M3_FUNC_STATIC inline
 int __builtin_clzll(uint64_t value) {
     unsigned long ret;
     _BitScanReverse64(&ret, value);
@@ -56,7 +56,7 @@ int __builtin_clzll(uint64_t value) {
 
 #define __builtin_popcountll(x)  (__popcnt((x) & 0xFFFFFFFF) + __popcnt((x) >> 32))
 
-static inline
+M3_FUNC_STATIC inline
 int __builtin_ctzll(uint64_t value) {
     //if (value == 0) return 64; // Note: ctz(0) result is undefined anyway
     uint32_t msh = (uint32_t)(value >> 32);
@@ -65,7 +65,7 @@ int __builtin_ctzll(uint64_t value) {
     return 32 + __builtin_ctz(msh);
 }
 
-static inline
+M3_FUNC_STATIC inline
 int __builtin_clzll(uint64_t value) {
     //if (value == 0) return 64; // Note: clz(0) result is undefined anyway
     uint32_t msh = (uint32_t)(value >> 32);
@@ -87,7 +87,7 @@ int __builtin_clzll(uint64_t value) {
 
 #if defined(__AVR__)
 
-static inline
+M3_FUNC_STATIC inline
 float rintf( float arg ) {
   union { float f; uint32_t i; } u;
   u.f = arg;
@@ -98,7 +98,7 @@ float rintf( float arg ) {
   return (float)lrint(arg);
 }
 
-static inline
+M3_FUNC_STATIC inline
 double rint( double arg ) {
   union { double f; uint32_t i[2]; } u;
   u.f = arg;
@@ -110,7 +110,7 @@ double rint( double arg ) {
 }
 
 //TODO
-static inline
+M3_FUNC_STATIC inline
 uint64_t strtoull(const char* str, char** endptr, int base) {
   return 0;
 }
@@ -121,28 +121,28 @@ uint64_t strtoull(const char* str, char** endptr, int base) {
  * Rotr, Rotl
  */
 
-static inline
+M3_FUNC_STATIC inline
 u32 rotl32(u32 n, unsigned c) {
     const unsigned mask = CHAR_BIT * sizeof(n) - 1;
     c &= mask & 31;
     return (n << c) | (n >> ((-c) & mask));
 }
 
-static inline
+M3_FUNC_STATIC inline
 u32 rotr32(u32 n, unsigned c) {
     const unsigned mask = CHAR_BIT * sizeof(n) - 1;
     c &= mask & 31;
     return (n >> c) | (n << ((-c) & mask));
 }
 
-static inline
+M3_FUNC_STATIC inline
 u64 rotl64(u64 n, unsigned c) {
     const unsigned mask = CHAR_BIT * sizeof(n) - 1;
     c &= mask & 63;
     return (n << c) | (n >> ((-c) & mask));
 }
 
-static inline
+M3_FUNC_STATIC inline
 u64 rotr64(u64 n, unsigned c) {
     const unsigned mask = CHAR_BIT * sizeof(n) - 1;
     c &= mask & 63;
@@ -154,24 +154,24 @@ u64 rotr64(u64 n, unsigned c) {
  */
 
 #define OP_DIV_U(RES, A, B)                                      \
-    if (M3_UNLIKELY(B == 0)) newTrap (m3Err_trapDivisionByZero);    \
+    if (M3_UNLIKELY(B == 0)) newTrap (m3Err_trapDivisionByZero); \
     RES = A / B;
 
 #define OP_REM_U(RES, A, B)                                      \
-    if (M3_UNLIKELY(B == 0)) newTrap (m3Err_trapDivisionByZero);    \
+    if (M3_UNLIKELY(B == 0)) newTrap (m3Err_trapDivisionByZero); \
     RES = A % B;
 
 // 2's complement detection
 #if (INT_MIN != -INT_MAX)
 
-    #define OP_DIV_S(RES, A, B, TYPE_MIN)                         \
+    #define OP_DIV_S(RES, A, B, TYPE_MIN)                            \
         if (M3_UNLIKELY(B == 0)) newTrap (m3Err_trapDivisionByZero); \
         if (M3_UNLIKELY(B == -1 and A == TYPE_MIN)) {                \
-            newTrap (m3Err_trapIntegerOverflow);                  \
-        }                                                         \
+            newTrap (m3Err_trapIntegerOverflow);                     \
+        }                                                            \
         RES = A / B;
 
-    #define OP_REM_S(RES, A, B, TYPE_MIN)                         \
+    #define OP_REM_S(RES, A, B, TYPE_MIN)                            \
         if (M3_UNLIKELY(B == 0)) newTrap (m3Err_trapDivisionByZero); \
         if (M3_UNLIKELY(B == -1 and A == TYPE_MIN)) RES = 0;         \
         else RES = A % B;
@@ -188,10 +188,10 @@ u64 rotr64(u64 n, unsigned c) {
  */
 
 #define OP_TRUNC(RES, A, TYPE, RMIN, RMAX)                  \
-    if (M3_UNLIKELY(isnan(A))) {                               \
+    if (M3_UNLIKELY(isnan(A))) {                            \
         newTrap (m3Err_trapIntegerConversion);              \
     }                                                       \
-    if (M3_UNLIKELY(A <= RMIN or A >= RMAX)) {                 \
+    if (M3_UNLIKELY(A <= RMIN or A >= RMAX)) {              \
         newTrap (m3Err_trapIntegerOverflow);                \
     }                                                       \
     RES = (TYPE)A;
@@ -208,11 +208,11 @@ u64 rotr64(u64 n, unsigned c) {
 #define OP_U64_TRUNC_F64(RES, A)    OP_TRUNC(RES, A, u64,                   -1.0 , 18446744073709551616.0 )
 
 #define OP_TRUNC_SAT(RES, A, TYPE, RMIN, RMAX, IMIN, IMAX)  \
-    if (M3_UNLIKELY(isnan(A))) {                               \
+    if (M3_UNLIKELY(isnan(A))) {                            \
         RES = 0;                                            \
-    } else if (M3_UNLIKELY(A <= RMIN)) {                       \
+    } else if (M3_UNLIKELY(A <= RMIN)) {                    \
         RES = IMIN;                                         \
-    } else if (M3_UNLIKELY(A >= RMAX)) {                       \
+    } else if (M3_UNLIKELY(A >= RMAX)) {                    \
         RES = IMAX;                                         \
     } else {                                                \
         RES = (TYPE)A;                                      \
@@ -236,28 +236,28 @@ u64 rotr64(u64 n, unsigned c) {
 
 #include <math.h>
 
-static inline
+M3_FUNC_STATIC inline
 f32 min_f32(f32 a, f32 b) {
     if (M3_UNLIKELY(isnan(a) or isnan(b))) return NAN;
     if (M3_UNLIKELY(a == 0 and a == b)) return signbit(a) ? a : b;
     return a > b ? b : a;
 }
 
-static inline
+M3_FUNC_STATIC inline
 f32 max_f32(f32 a, f32 b) {
     if (M3_UNLIKELY(isnan(a) or isnan(b))) return NAN;
     if (M3_UNLIKELY(a == 0 and a == b)) return signbit(a) ? b : a;
     return a > b ? a : b;
 }
 
-static inline
+M3_FUNC_STATIC inline
 f64 min_f64(f64 a, f64 b) {
     if (M3_UNLIKELY(isnan(a) or isnan(b))) return NAN;
     if (M3_UNLIKELY(a == 0 and a == b)) return signbit(a) ? a : b;
     return a > b ? b : a;
 }
 
-static inline
+M3_FUNC_STATIC inline
 f64 max_f64(f64 a, f64 b) {
     if (M3_UNLIKELY(isnan(a) or isnan(b))) return NAN;
     if (M3_UNLIKELY(a == 0 and a == b)) return signbit(a) ? b : a;

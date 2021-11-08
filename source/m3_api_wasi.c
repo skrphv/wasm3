@@ -62,7 +62,7 @@
 #  define close _close
 #endif
 
-static m3_wasi_context_t* wasi_context;
+M3_GLOBAL_VAR_STATIC m3_wasi_context_t* wasi_context;
 
 typedef struct wasi_iovec_t
 {
@@ -70,15 +70,7 @@ typedef struct wasi_iovec_t
     __wasi_size_t buf_len;
 } wasi_iovec_t;
 
-#define PREOPEN_CNT   5
-
-typedef struct Preopen {
-    int         fd;
-    const char* path;
-    const char* real_path;
-} Preopen;
-
-Preopen preopen[PREOPEN_CNT] = {
+M3_GLOBAL_VAR Preopen preopen[PREOPEN_CNT] = {
     {  0, "<stdin>" , "" },
     {  1, "<stdout>", "" },
     {  2, "<stderr>", "" },
@@ -96,7 +88,7 @@ Preopen preopen[PREOPEN_CNT] = {
 #  define APE_CASE_RET(e1,e2)     case e1:   return e2;   break;
 #endif
 
-static
+M3_FUNC_STATIC
 __wasi_errno_t errno_to_wasi(int errnum) {
     APE_SWITCH_BEG
     APE_CASE_RET( EPERM   , __WASI_ERRNO_PERM   )
@@ -140,7 +132,7 @@ __wasi_errno_t errno_to_wasi(int errnum) {
 
 #if !defined(__MINGW32__)
 
-static inline
+M3_FUNC_STATIC inline
 int clock_gettime(int clk_id, struct timespec *spec)
 {
     __int64 wintime; GetSystemTimeAsFileTime((FILETIME*)&wintime);
@@ -150,21 +142,21 @@ int clock_gettime(int clk_id, struct timespec *spec)
     return 0;
 }
 
-static inline
+M3_FUNC_STATIC inline
 int clock_getres(int clk_id, struct timespec *spec) {
     return -1; // Defaults to 1000000
 }
 
 #endif
 
-static inline
+M3_FUNC_STATIC inline
 int convert_clockid(__wasi_clockid_t in) {
     return 0;
 }
 
 #else // _WIN32
 
-static inline
+M3_FUNC_STATIC inline
 int convert_clockid(__wasi_clockid_t in) {
     switch (in) {
     case __WASI_CLOCKID_MONOTONIC:            return CLOCK_MONOTONIC;
@@ -177,7 +169,7 @@ int convert_clockid(__wasi_clockid_t in) {
 
 #endif // _WIN32
 
-static inline
+M3_FUNC_STATIC inline
 __wasi_timestamp_t convert_timespec(const struct timespec *ts) {
     if (ts->tv_sec < 0)
         return 0;
@@ -188,7 +180,7 @@ __wasi_timestamp_t convert_timespec(const struct timespec *ts) {
 
 #if defined(HAS_IOVEC)
 
-static inline
+M3_FUNC_STATIC inline
 void copy_iov_to_host(void* _mem, struct iovec* host_iov, wasi_iovec_t* wasi_iov, int32_t iovs_len)
 {
     // Convert wasi memory offsets to host addresses
@@ -758,7 +750,7 @@ m3ApiRawFunction(m3_wasi_generic_proc_exit)
 }
 
 
-static
+M3_FUNC_STATIC
 M3Result SuppressLookupFailure(M3Result i_result)
 {
     if (i_result == m3Err_functionLookupFailed)
@@ -796,7 +788,7 @@ M3Result  m3_LinkWASI  (IM3Module module)
         wasi_context->argv = 0;
     }
 
-    static const char* namespaces[2] = { "wasi_unstable", "wasi_snapshot_preview1" };
+    M3_LOCAL_VAR_STATIC_CONST_PTR(char) namespaces[2] = { "wasi_unstable", "wasi_snapshot_preview1" };
 
     // Some functions are incompatible between WASI versions
 _   (SuppressLookupFailure (m3_LinkRawFunction (module, "wasi_unstable",          "fd_seek",     "i(iIi*)", &m3_wasi_unstable_fd_seek)));

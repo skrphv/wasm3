@@ -279,6 +279,10 @@ _   (ReadLEB_u32 (& startFuncIndex, & i_bytes, i_end));                         
     _catch: return result;
 }
 
+#if defined(d_m3PreferStaticAlloc)
+M3_GLOBAL_VAR_STATIC M3Compilation Parse_InitExpr_compilation;
+#endif
+
 
 M3Result  Parse_InitExpr  (M3Module * io_module, bytes_t * io_bytes, cbytes_t i_end)
 {
@@ -287,15 +291,16 @@ M3Result  Parse_InitExpr  (M3Module * io_module, bytes_t * io_bytes, cbytes_t i_
     // this doesn't generate code pages. just walks the wasm bytecode to find the end
 
 #if defined(d_m3PreferStaticAlloc)
-    static M3Compilation compilation;
+    M3Compilation * compilation = &Parse_InitExpr_compilation;
 #else
-    M3Compilation compilation;
+    M3Compilation local_compilation;
+    M3Compilation * compilation = &local_compilation;
 #endif
-    compilation = (M3Compilation){ .runtime = NULL, .module = io_module, .wasm = * io_bytes, .wasmEnd = i_end };
+    *compilation = (M3Compilation){ .runtime = NULL, .module = io_module, .wasm = * io_bytes, .wasmEnd = i_end };
 
-    result = CompileBlockStatements (& compilation);
+    result = CompileBlockStatements (compilation);
 
-    * io_bytes = compilation.wasm;
+    * io_bytes = compilation->wasm;
 
     return result;
 }
@@ -551,7 +556,7 @@ M3Result  ParseModuleSection  (M3Module * o_module, u8 i_sectionType, bytes_t i_
 
     typedef M3Result (* M3Parser) (M3Module *, bytes_t, cbytes_t);
 
-    static M3Parser s_parsers [] =
+    M3_LOCAL_VAR_STATIC_CONST M3Parser s_parsers [] =
     {
         ParseSection_Custom,    // 0
         ParseSection_Type,      // 1
@@ -613,7 +618,7 @@ _   (Read_u32 (& version, & pos, end));
     _throwif (m3Err_wasmMalformed, magic != 0x6d736100);
     _throwif (m3Err_incompatibleWasmVersion, version != 1);
 
-    static const u8 sectionsOrder[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 10, 11, 0 }; // 0 is a placeholder
+    M3_LOCAL_VAR_STATIC_CONST u8 sectionsOrder[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 10, 11, 0 }; // 0 is a placeholder
     u8 expectedSection = 0;
 
     while (pos < end)

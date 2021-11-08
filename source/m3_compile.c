@@ -16,13 +16,13 @@
 
 //----- EMIT --------------------------------------------------------------------------------------------------------------
 
-static inline
+M3_FUNC_STATIC inline
 pc_t GetPC (IM3Compilation o)
 {
     return GetPagePC (o->page);
 }
 
-static M3_NOINLINE
+M3_FUNC_STATIC M3_NOINLINE
 M3Result  EnsureCodePageNumLines  (IM3Compilation o, u32 i_numLines)
 {
     M3Result result = m3Err_none;
@@ -51,7 +51,7 @@ M3Result  EnsureCodePageNumLines  (IM3Compilation o, u32 i_numLines)
     return result;
 }
 
-static M3_NOINLINE
+M3_FUNC_STATIC M3_NOINLINE
 M3Result  EmitOp  (IM3Compilation o, IM3Operation i_operation)
 {
     M3Result result = m3Err_none;                                 d_m3Assert (i_operation or IsStackPolymorphic (o));
@@ -80,21 +80,21 @@ M3Result  EmitOp  (IM3Compilation o, IM3Operation i_operation)
 }
 
 // Push an immediate constant into the M3 codestream
-static M3_NOINLINE
+M3_FUNC_STATIC M3_NOINLINE
 void  EmitConstant32  (IM3Compilation o, const u32 i_immediate)
 {
     if (o->page)
         EmitWord32 (o->page, i_immediate);
 }
 
-static M3_NOINLINE
+M3_FUNC_STATIC M3_NOINLINE
 void  EmitSlotOffset  (IM3Compilation o, const i32 i_offset)
 {
     if (o->page)
         EmitWord32 (o->page, i_offset);
 }
 
-static M3_NOINLINE
+M3_FUNC_STATIC M3_NOINLINE
 pc_t  EmitPointer  (IM3Compilation o, const void * const i_pointer)
 {
     pc_t ptr = GetPagePC (o->page);
@@ -105,7 +105,7 @@ pc_t  EmitPointer  (IM3Compilation o, const void * const i_pointer)
     return ptr;
 }
 
-static M3_NOINLINE
+M3_FUNC_STATIC M3_NOINLINE
 void * ReservePointer (IM3Compilation o)
 {
     pc_t ptr = GetPagePC (o->page);
@@ -132,29 +132,50 @@ void * ReservePointer (IM3Compilation o)
 #   define FPOP(x) NULL
 #endif
 
-static const IM3Operation c_preserveSetSlot [] = { NULL, op_PreserveSetSlot_i32,       op_PreserveSetSlot_i64,
-                                                    FPOP(op_PreserveSetSlot_f32), FPOP(op_PreserveSetSlot_f64) };
-static const IM3Operation c_setSetOps [] =       { NULL, op_SetSlot_i32,               op_SetSlot_i64,
-                                                    FPOP(op_SetSlot_f32),         FPOP(op_SetSlot_f64) };
-static const IM3Operation c_setGlobalOps [] =    { NULL, op_SetGlobal_i32,             op_SetGlobal_i64,
-                                                    FPOP(op_SetGlobal_f32),       FPOP(op_SetGlobal_f64) };
-static const IM3Operation c_setRegisterOps [] =  { NULL, op_SetRegister_i32,           op_SetRegister_i64,
-                                                    FPOP(op_SetRegister_f32),     FPOP(op_SetRegister_f64) };
+M3_GLOBAL_VAR_STATIC_CONST
+IM3Operation c_preserveSetSlot [] = {
+    NULL, op_PreserveSetSlot_i32, op_PreserveSetSlot_i64,
+    FPOP(op_PreserveSetSlot_f32), FPOP(op_PreserveSetSlot_f64)
+};
 
-static const IM3Operation c_intSelectOps [2] [4] =      { { op_Select_i32_rss, op_Select_i32_srs, op_Select_i32_ssr, op_Select_i32_sss },
-                                                          { op_Select_i64_rss, op_Select_i64_srs, op_Select_i64_ssr, op_Select_i64_sss } };
+M3_GLOBAL_VAR_STATIC_CONST
+IM3Operation c_setSetOps [] = {
+    NULL, op_SetSlot_i32, op_SetSlot_i64,
+    FPOP(op_SetSlot_f32), FPOP(op_SetSlot_f64)
+};
+
+M3_GLOBAL_VAR_STATIC_CONST
+IM3Operation c_setGlobalOps [] = {
+    NULL, op_SetGlobal_i32, op_SetGlobal_i64,
+    FPOP(op_SetGlobal_f32), FPOP(op_SetGlobal_f64)
+};
+
+M3_GLOBAL_VAR_STATIC_CONST
+IM3Operation c_setRegisterOps [] = {
+    NULL, op_SetRegister_i32, op_SetRegister_i64,
+    FPOP(op_SetRegister_f32), FPOP(op_SetRegister_f64)
+};
+
+M3_GLOBAL_VAR_STATIC_CONST
+IM3Operation c_intSelectOps [2] [4] = {
+    { op_Select_i32_rss, op_Select_i32_srs, op_Select_i32_ssr, op_Select_i32_sss },
+    { op_Select_i64_rss, op_Select_i64_srs, op_Select_i64_ssr, op_Select_i64_sss }
+};
+
 #if d_m3HasFloat
-static const IM3Operation c_fpSelectOps [2] [2] [3] = { { { op_Select_f32_sss, op_Select_f32_srs, op_Select_f32_ssr },        // selector in slot
-                                                          { op_Select_f32_rss, op_Select_f32_rrs, op_Select_f32_rsr } },      // selector in reg
-                                                        { { op_Select_f64_sss, op_Select_f64_srs, op_Select_f64_ssr },        // selector in slot
-                                                          { op_Select_f64_rss, op_Select_f64_rrs, op_Select_f64_rsr } } };    // selector in reg
+M3_GLOBAL_VAR_STATIC_CONST
+IM3Operation c_fpSelectOps [2] [2] [3] = {
+    { { op_Select_f32_sss, op_Select_f32_srs, op_Select_f32_ssr },        // selector in slot
+      { op_Select_f32_rss, op_Select_f32_rrs, op_Select_f32_rsr } },      // selector in reg
+    { { op_Select_f64_sss, op_Select_f64_srs, op_Select_f64_ssr },        // selector in slot
+      { op_Select_f64_rss, op_Select_f64_rrs, op_Select_f64_rsr } } };    // selector in reg
 #endif
 
-static const u16 c_m3RegisterUnallocated = 0;
-static const u16 c_slotUnused = 0xffff;
+M3_GLOBAL_VAR_STATIC_CONST u16 c_m3RegisterUnallocated = 0;
+M3_GLOBAL_VAR_STATIC_CONST u16 c_slotUnused = 0xffff;
 
 // all args & returns are 64-bit aligned, so use 2 slots for a d_m3Use32BitSlots=1 build
-static const u16 c_ioSlotCount = sizeof (u64) / sizeof (m3slot_t);
+M3_GLOBAL_VAR_STATIC_CONST u16 c_ioSlotCount = sizeof (u64) / sizeof (m3slot_t);
 
 M3Result  AcquireCompilationCodePage  (IM3Compilation o, IM3CodePage * o_codePage)
 {
@@ -976,7 +997,7 @@ _               (IncrementSlotUsageCount (o, * o_preservedSlotNumber));
     _catch: return result;
 }
 
-static
+M3_FUNC_STATIC
 M3Result  GetBlockScope  (IM3Compilation o, IM3CompilationScope * o_scope, u32 i_depth)
 {
     M3Result result = m3Err_none;
@@ -1809,7 +1830,7 @@ _   (EmitSlotNumOfStackTopAndPop (o));
 }
 
 
-static
+M3_FUNC_STATIC
 M3Result  ReadBlockType  (IM3Compilation o, IM3FuncType * o_blockType)
 {
     M3Result result;
@@ -2281,7 +2302,7 @@ M3Result  CompileRawFunction  (IM3Module io_module,  IM3Function io_function, co
 #define d_convertOpList(OP)                 { op_##OP##_r_r,            op_##OP##_r_s,              op_##OP##_s_r,              op_##OP##_s_s }
 
 
-const M3OpInfo c_operations [] =
+M3_GLOBAL_VAR_CONST M3OpInfo c_operations [] =
 {
     M3OP( "unreachable",         0, none,   d_logOp (Unreachable),              Compile_Unreachable ),  // 0x00
     M3OP( "nop",                 0, none,   d_emptyOpList,                      Compile_Nop ),          // 0x01 .
@@ -2551,7 +2572,7 @@ const M3OpInfo c_operations [] =
 # endif
 };
 
-const M3OpInfo c_operationsFC [] =
+M3_GLOBAL_VAR_CONST M3OpInfo c_operationsFC [] =
 {
     M3OP_F( "i32.trunc_s:sat/f32",0,  i_32,   d_convertOpList (i32_TruncSat_f32),        Compile_Convert ),  // 0x00
     M3OP_F( "i32.trunc_u:sat/f32",0,  i_32,   d_convertOpList (u32_TruncSat_f32),        Compile_Convert ),  // 0x01

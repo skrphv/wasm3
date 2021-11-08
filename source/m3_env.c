@@ -251,6 +251,11 @@ void  m3_FreeRuntime  (IM3Runtime i_runtime)
     }
 }
 
+
+#if defined(d_m3PreferStaticAlloc)
+M3_GLOBAL_VAR_STATIC M3Runtime EvaluateExpression_runtime;
+#endif
+
 M3Result  EvaluateExpression  (IM3Module i_module, void * o_expressed, u8 i_type, bytes_t * io_bytes, cbytes_t i_end)
 {
     M3Result result = m3Err_none;
@@ -259,23 +264,25 @@ M3Result  EvaluateExpression  (IM3Module i_module, void * o_expressed, u8 i_type
 
     // create a temporary runtime context
 #if defined(d_m3PreferStaticAlloc)
-    static M3Runtime runtime;
+    M3Runtime* runtime = &EvaluateExpression_runtime;
 #else
-    M3Runtime runtime;
+    M3Runtime local_runtime;
+    M3Runtime* runtime = &local_runtime;
 #endif
-    M3_INIT (runtime);
 
-    runtime.environment = i_module->runtime->environment;
-    runtime.numStackSlots = i_module->runtime->numStackSlots;
-    runtime.stack = i_module->runtime->stack;
+    M3_INIT (*runtime);
 
-    m3stack_t stack = (m3stack_t)runtime.stack;
+    runtime->environment = i_module->runtime->environment;
+    runtime->numStackSlots = i_module->runtime->numStackSlots;
+    runtime->stack = i_module->runtime->stack;
+
+    m3stack_t stack = (m3stack_t)runtime->stack;
 
     IM3Runtime savedRuntime = i_module->runtime;
-    i_module->runtime = & runtime;
+    i_module->runtime = runtime;
 
-    IM3Compilation o = & runtime.compilation;
-    o->runtime = & runtime;
+    IM3Compilation o = & runtime->compilation;
+    o->runtime = runtime;
     o->module =  i_module;
     o->wasm =    * io_bytes;
     o->wasmEnd = i_end;
@@ -284,16 +291,16 @@ M3Result  EvaluateExpression  (IM3Module i_module, void * o_expressed, u8 i_type
     o->block.depth = -1;  // so that root compilation depth = 0
 
     //  OPTZ: this code page could be erased after use.  maybe have 'empty' list in addition to full and open?
-    o->page = AcquireCodePage (& runtime);  // AcquireUnusedCodePage (...)
+    o->page = AcquireCodePage (runtime);  // AcquireUnusedCodePage (...)
 
     if (o->page)
     {
-        IM3FuncType ftype = runtime.environment->retFuncTypes[i_type];
+        IM3FuncType ftype = runtime->environment->retFuncTypes[i_type];
 
         pc_t m3code = GetPagePC (o->page);
         result = CompileBlock (o, ftype, c_waOp_block);
 
-        if (not result && o->maxStackSlots >= runtime.numStackSlots) {
+        if (not result && o->maxStackSlots >= runtime->numStackSlots) {
             result = m3Err_trapStackOverflow;
         }
 
@@ -315,12 +322,12 @@ M3Result  EvaluateExpression  (IM3Module i_module, void * o_expressed, u8 i_type
         }
 
         // TODO: EraseCodePage (...) see OPTZ above
-        ReleaseCodePage (& runtime, o->page);
+        ReleaseCodePage (runtime, o->page);
     }
     else result = m3Err_mallocFailedCodePage;
 
-    runtime.stack = NULL;        // prevent free(stack) in ReleaseRuntime
-    Runtime_Release (& runtime);
+    runtime->stack = NULL;        // prevent free(stack) in ReleaseRuntime
+    Runtime_Release (runtime);
     i_module->runtime = savedRuntime;
 
     * io_bytes = o->wasm;
@@ -742,7 +749,7 @@ _           (CompileFunction (function))
     return result;
 }
 
-static
+M3_FUNC_STATIC
 M3Result checkStartFunction(IM3Module i_module)
 {
     M3Result result = m3Err_none;                               d_m3Assert(i_module);
@@ -822,7 +829,7 @@ M3Result  m3_CallV  (IM3Function i_function, ...)
     return r;
 }
 
-static
+M3_FUNC_STATIC
 void  ReportNativeStackUsage  ()
 {
 #   if d_m3LogNativeStack

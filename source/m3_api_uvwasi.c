@@ -25,11 +25,11 @@
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
 #elif !defined(_MSC_VER)
-extern char** environ;
+extern M3_GLOBAL_VAR char** environ;
 #endif
 
-static m3_wasi_context_t* wasi_context;
-static uvwasi_t uvwasi;
+M3_GLOBAL_VAR_STATIC m3_wasi_context_t* wasi_context;
+M3_GLOBAL_VAR_STATIC uvwasi_t uvwasi;
 
 typedef struct wasi_iovec_t
 {
@@ -1007,7 +1007,7 @@ m3ApiRawFunction(m3_wasi_generic_sched_yield)
 }
 
 
-static
+M3_FUNC_STATIC
 M3Result SuppressLookupFailure(M3Result i_result)
 {
     if (i_result == m3Err_functionLookupFailed)
@@ -1072,7 +1072,7 @@ M3Result  m3_LinkWASIWithOptions  (IM3Module module, uvwasi_options_t init_optio
         }
     }
 
-    static const char* namespaces[2] = { "wasi_unstable", "wasi_snapshot_preview1" };
+    M3_LOCAL_VAR_STATIC_CONST_PTR(char) namespaces[2] = { "wasi_unstable", "wasi_snapshot_preview1" };
 
     // Some functions are incompatible between WASI versions
 _   (SuppressLookupFailure (m3_LinkRawFunction (module, "wasi_unstable",          "fd_seek",           "i(iIi*)",   &m3_wasi_unstable_fd_seek)));

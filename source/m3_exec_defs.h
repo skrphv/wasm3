@@ -44,7 +44,7 @@ d_m3BeginExternC
 
 typedef m3ret_t (vectorcall * IM3Operation) (d_m3OpSig);
 
-#define d_m3RetSig                  static inline m3ret_t vectorcall
+#define d_m3RetSig                  M3_FUNC_STATIC inline m3ret_t vectorcall
 #define d_m3Op(NAME)                M3_NO_UBSAN d_m3RetSig op_##NAME (d_m3OpSig)
 
 #define nextOpImpl()                ((IM3Operation)(* _pc))(_pc + 1, d_m3OpArgs)

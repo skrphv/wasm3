@@ -70,9 +70,11 @@ cstr_t  GetTypeName  (u8 i_m3Type)
 // TODO: these 'static char string []' aren't thread-friendly.  though these functions are
 // mainly for simple diagnostics during development, it'd be nice if they were fully reliable.
 
+M3_GLOBAL_VAR_STATIC char SPrintFuncTypeSignature_string [256];
+
 cstr_t  SPrintFuncTypeSignature  (IM3FuncType i_funcType)
 {
-    static char string [256];
+    char * string = SPrintFuncTypeSignature_string;
 
     sprintf (string, "(");
 
@@ -121,18 +123,22 @@ size_t  SPrintArg  (char * o_string, size_t i_stringBufferSize, voidptr_t i_sp, 
 }
 
 
+M3_GLOBAL_VAR_STATIC char SPrintValue_string [100];
+
 cstr_t  SPrintValue  (void * i_value, u8 i_type)
 {
-    static char string [100];
+    char * string = SPrintValue_string;
     SPrintArg (string, 100, (m3stack_t) i_value, i_type);
     return string;
 }
 
 
+M3_GLOBAL_VAR_STATIC char SPrintFunctionArgList_string [256];
+
 cstr_t  SPrintFunctionArgList  (IM3Function i_function, m3stack_t i_sp)
 {
     int ret;
-    static char string [256];
+    char * string = SPrintFunctionArgList_string;
 
     char * s = string;
     ccstr_t e = string + sizeof(string) - 1;
@@ -170,7 +176,7 @@ cstr_t  SPrintFunctionArgList  (IM3Function i_function, m3stack_t i_sp)
     return string;
 }
 
-static
+M3_FUNC_STATIC
 OpInfo find_operation_info  (IM3Operation i_operation)
 {
     OpInfo opInfo = { NULL, 0 };
@@ -446,14 +452,15 @@ void  dump_type_stack  (IM3Compilation o)
 }
 
 
-static const char *  GetOpcodeIndentionString  (i32 blockDepth)
+M3_FUNC_STATIC
+const char *  GetOpcodeIndentionString  (i32 blockDepth)
 {
     blockDepth += 1;
 
     if (blockDepth < 0)
         blockDepth = 0;
 
-    static const char * s_spaces = ".......................................................................................";
+    M3_LOCAL_VAR_STATIC_CONST_PTR(char) s_spaces = ".......................................................................................";
     const char * indent = s_spaces + strlen (s_spaces);
     indent -= (blockDepth * 2);
     if (indent < s_spaces)
@@ -496,14 +503,7 @@ void  log_emit  (IM3Compilation o, IM3Operation i_operation)
 
 # if d_m3EnableOpProfiling
 
-typedef struct M3ProfilerSlot
-{
-    cstr_t      opName;
-    u64         hitCount;
-}
-M3ProfilerSlot;
-
-static M3ProfilerSlot s_opProfilerCounts [d_m3ProfilerSlotMask + 1] = {};
+M3_GLOBAL_VAR_STATIC M3ProfilerSlot s_opProfilerCounts [d_m3ProfilerSlotMask + 1];
 
 void  ProfileHit  (cstr_t i_operationName)
 {

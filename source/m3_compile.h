@@ -143,7 +143,7 @@ typedef const M3OpInfo *    IM3OpInfo;
 IM3OpInfo  GetOpInfo  (m3opcode_t opcode);
 
 // TODO: This helper should be removed, when MultiValue is implemented
-static inline
+M3_FUNC_STATIC inline
 u8 GetSingleRetType(IM3FuncType ftype) {
     return (ftype && ftype->numRets) ? ftype->types[0] : (u8)c_m3Type_none;
 }

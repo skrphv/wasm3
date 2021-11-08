@@ -76,10 +76,10 @@ m3ApiRawFunction(m3_libc_print)
     m3ApiReturn(i_size);
 }
 
-static
+M3_FUNC_STATIC
 void internal_itoa(int n, char s[], int radix)
 {
-    static char const HEXDIGITS[0x10] = {
+    M3_LOCAL_VAR_STATIC_CONST char HEXDIGITS[0x10] = {
         '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
@@ -191,7 +191,7 @@ m3ApiRawFunction(m3_libc_clock_ms)
 #endif
 }
 
-static
+M3_FUNC_STATIC
 M3Result  SuppressLookupFailure (M3Result i_result)
 {
     if (i_result == m3Err_functionLookupFailed)

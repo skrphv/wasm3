@@ -33,6 +33,18 @@ cstr_t          SPrintFuncTypeSignature (IM3FuncType i_funcType);
 
 #endif // DEBUG
 
+
+# if d_m3EnableOpProfiling
+
+typedef struct M3ProfilerSlot
+{
+    cstr_t      opName;
+    u64         hitCount;
+}
+M3ProfilerSlot;
+
+#endif
+
 d_m3EndExternC
 
 #endif // m3_info_h

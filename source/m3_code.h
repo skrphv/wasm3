@@ -48,7 +48,7 @@ bool                    MapPCToOffset           (IM3CodePage i_page, pc_t i_pc, 
 # endif // d_m3RecordBacktraces
 
 # ifdef DEBUG
-void                    dump_code_page            (IM3CodePage i_codePage, pc_t i_startPC);
+void                    dump_code_page          (IM3CodePage i_codePage, pc_t i_startPC);
 # endif
 
 #define EmitWord(page, val) EmitWord_impl(page, (void*)(val))

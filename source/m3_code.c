@@ -9,11 +9,13 @@
 
 
 //---------------------------------------------------------------------------------------------------------------------------------
+M3_GLOBAL_VAR_STATIC u32 NewCodePage_sequence = 0;
 
+//---------------------------------------------------------------------------------------------------------------------------------
 
 IM3CodePage  NewCodePage  (u32 i_minNumLines)
 {
-    static u32 s_sequence = 0;
+    u32* sequence = &NewCodePage_sequence;
 
     IM3CodePage page;
 
@@ -24,7 +26,7 @@ IM3CodePage  NewCodePage  (u32 i_minNumLines)
 
     if (page)
     {
-        page->info.sequence = ++s_sequence;
+        page->info.sequence = ++(*sequence);
         page->info.numLines = (pageSize - sizeof (M3CodePageHeader)) / sizeof (code_t);
 
 #if d_m3RecordBacktraces

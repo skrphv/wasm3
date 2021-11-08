@@ -31,7 +31,7 @@ M3Result m3_Yield ()
 #define SEC_TO_US(sec) ((sec)*1000000)
 #define NS_TO_US(ns)    ((ns)/1000)
 
-static uint64_t initial_ts = -1;
+M3_GLOBAL_VAR_STATIC uint64_t initial_ts = -1;
 
 uint64_t m3_GetTimestamp()
 {
@@ -49,10 +49,10 @@ uint64_t m3_GetTimestamp()
 
 #if d_m3FixedHeap
 
-static u8 fixedHeap[d_m3FixedHeap];
-static u8* fixedHeapPtr = fixedHeap;
-static u8* const fixedHeapEnd = fixedHeap + d_m3FixedHeap;
-static u8* fixedHeapLast = NULL;
+M3_GLOBAL_VAR_STATIC u8 fixedHeap[d_m3FixedHeap];
+M3_GLOBAL_VAR_STATIC u8* fixedHeapPtr = fixedHeap;
+M3_GLOBAL_VAR_STATIC u8* const fixedHeapEnd = fixedHeap + d_m3FixedHeap;
+M3_GLOBAL_VAR_STATIC u8* fixedHeapLast = NULL;
 
 #if d_m3FixedHeapAlign > 1
 #   define HEAP_ALIGN_PTR(P) P = (u8*)(((size_t)(P)+(d_m3FixedHeapAlign-1)) & ~ (d_m3FixedHeapAlign-1));
@@ -164,8 +164,8 @@ void *  m3_CopyMem  (const void * i_from, size_t i_size)
 
 #if d_m3LogNativeStack
 
-static size_t stack_start;
-static size_t stack_end;
+M3_GLOBAL_VAR_STATIC size_t stack_start;
+M3_GLOBAL_VAR_STATIC size_t stack_end;
 
 void        m3StackCheckInit ()
 {
